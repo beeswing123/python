@@ -17,6 +17,12 @@
           if (!r.ok) throw new Error('Failed to load ast_rules.py.js: ' + r.status)
           return r.text()
         })
+        .catch((err) => {
+          // Same rule as the manifest: never memoise a rejection, or one
+          // transient failure disables every AST check until a reload.
+          astRulesSourcePromise = null
+          throw err
+        })
     }
     return astRulesSourcePromise
   }

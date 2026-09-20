@@ -31,10 +31,17 @@
   let metaPromise = null
   function fetchMeta() {
     if (!metaPromise) {
-      metaPromise = fetch('content/manifest.json', { cache: 'no-store' }).then((r) => {
-        if (!r.ok) throw new Error('manifest fetch failed: ' + r.status)
-        return r.json()
-      })
+      metaPromise = fetch('content/manifest.json', { cache: 'no-store' })
+        .then((r) => {
+          if (!r.ok) throw new Error('manifest fetch failed: ' + r.status)
+          return r.json()
+        })
+        .catch((err) => {
+          // Never memoise a rejection: one transient failure must not brick the
+          // page until the user reloads.
+          metaPromise = null
+          throw err
+        })
     }
     return metaPromise
   }

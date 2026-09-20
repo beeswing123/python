@@ -40,6 +40,32 @@ describe('LiaScriptLoader.fetchLesson', () => {
   })
 })
 
+describe('LiaScriptLoader manifest caching', () => {
+  beforeEach(() => {
+    vi.resetModules()
+    delete window.LiaScriptLoader
+  })
+
+  it('retries after a failed manifest fetch instead of caching the rejection', async () => {
+    await import('../../site/assets/runtime/lesson-loader.js')
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 500 })
+      .mockResolvedValue({ ok: true, json: async () => ({ lessons: [] }) })
+    globalThis.fetch = fetchMock
+
+    // A memoised rejection used to brick the page until a reload.
+    await expect(window.LiaScriptLoader.getLesson('ch01-l01')).rejects.toThrow(
+      'manifest fetch failed: 500',
+    )
+    // The retry must reach the network again, not the cached failure.
+    await expect(window.LiaScriptLoader.getLesson('ch01-l01')).rejects.toThrow(
+      'Lesson not found: ch01-l01',
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+})
+
 describe('LiaScriptLoader.getLesson', () => {
   beforeEach(() => {
     vi.resetModules()

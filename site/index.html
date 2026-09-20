@@ -34,29 +34,41 @@
 
     const params = new URLSearchParams(location.search)
     const id = params.get('id') || 'ch01-l01-hello'
-    // Metadata comes from the manifest, already parsed by build-manifest.
-    const lesson = await window.LiaScriptLoader.getLesson(id)
-    // parseFrontmatter is only used to split the Markdown body from its frontmatter.
-    const md = await window.LiaScriptLoader.fetchLesson(id)
-    const { body } = window.CheckRunner.parseFrontmatter(md)
-    document.getElementById('loading').remove()
-    // textContent, not innerText: the lesson is Markdown source, and innerText
-    // collapses its run of whitespace into one paragraph.
-    document.getElementById('lia-container').textContent = body
+    const loading = document.getElementById('loading')
 
-    const view = createEditor(document.getElementById('editor-host'), lesson.starter_code || '')
+    try {
+      // Metadata comes from the manifest, already parsed by build-manifest.
+      const lesson = await window.LiaScriptLoader.getLesson(id)
+      // parseFrontmatter is only used to split the Markdown body from its frontmatter.
+      const md = await window.LiaScriptLoader.fetchLesson(id)
+      const { body } = window.CheckRunner.parseFrontmatter(md)
+      loading.remove()
+      // textContent, not innerText: the lesson is Markdown source, and innerText
+      // collapses its run of whitespace into one paragraph.
+      document.getElementById('lia-container').textContent = body
 
-    const title = lesson.title && (lesson.title.en || lesson.title.zh)
-    if (title) {
-      const h = document.querySelector('header h1')
-      if (h) h.textContent = title
+      const view = createEditor(document.getElementById('editor-host'), lesson.starter_code || '')
+
+      const title = lesson.title && (lesson.title.en || lesson.title.zh)
+      if (title) {
+        const h = document.querySelector('header h1')
+        if (h) h.textContent = title
+      }
+
+      window.UIControls.bind({
+        lesson: lesson,
+        getCode: () => view.state.doc.toString(),
+        onPass: () => window.Progress && window.Progress.markDone(id),
+      })
+    } catch (err) {
+      // A 404, a transient failure or an unknown ?id= used to leave "Loading
+      // lesson…" forever, with no Run button and no explanation.
+      const message = 'Failed to load lesson: ' + ((err && err.message) || String(err))
+      loading.textContent = message
+      if (!loading.isConnected) {
+        document.getElementById('lia-container').textContent = message
+      }
     }
-
-    window.UIControls.bind({
-      lesson: lesson,
-      getCode: () => view.state.doc.toString(),
-      onPass: () => window.Progress && window.Progress.markDone(id),
-    })
   </script>
   <div class="progress-controls" style="padding:0.5rem;">
     <button type="button" id="btn-export">Export Progress</button>
