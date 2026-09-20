@@ -14,18 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import yaml
-
-
-def _parse_frontmatter(md_path: Path) -> dict[str, Any]:
-    text = md_path.read_text(encoding="utf-8")
-    if not text.startswith("---\n"):
-        raise ValueError(str(md_path) + ": missing frontmatter")
-    end = text.find("\n---\n", 4)
-    if end < 0:
-        raise ValueError(str(md_path) + ": unterminated frontmatter")
-    parsed = yaml.safe_load(text[4:end])
-    return parsed if isinstance(parsed, dict) else {}
+from py_tutorial_build.frontmatter import parse_frontmatter
 
 
 def build_manifest(content_dir: Path, out_path: Path) -> None:
@@ -34,7 +23,7 @@ def build_manifest(content_dir: Path, out_path: Path) -> None:
     for md_path in sorted(content_dir.rglob("*.md")):
         rel = md_path.relative_to(content_dir)
         try:
-            fm = _parse_frontmatter(md_path)
+            fm = parse_frontmatter(md_path)
         except ValueError as exc:
             print("skip " + str(rel) + ": " + str(exc), file=sys.stderr)
             continue

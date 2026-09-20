@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "required": ["id", "chapter", "order", "title", "description", "starter_code", "solution", "checks"],
   "properties": {
     "id": { "type": "string", "pattern": "^ch\\d{2}-l\\d{2}-[a-z0-9-]+$" },
@@ -27,7 +28,17 @@
     "starter_code": { "type": "string" },
     "solution": { "type": "string" },
     "hints": { "type": "array" },
-    "checks": { "type": "array", "minItems": 1 },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": { "enum": ["output", "ast"] }
+        }
+      }
+    },
     "errors": { "type": "object" },
     "tts": { "type": "object" }
   }

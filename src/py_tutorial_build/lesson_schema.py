@@ -4,30 +4,22 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
-import yaml
 from jsonschema import Draft7Validator
 
 from py_tutorial_build.ast_rules import validate_ast_check
+from py_tutorial_build.frontmatter import parse_frontmatter
 
 SCHEMA_PATH = Path(__file__).parent / "schemas" / "lesson.schema.json"
 
 
-def _extract_frontmatter(md_path: Path) -> dict[str, Any]:
-    text = md_path.read_text(encoding="utf-8")
-    if not text.startswith("---\n"):
-        raise ValueError(str(md_path) + ": missing frontmatter")
-    end = text.find("\n---\n", 4)
-    if end < 0:
-        raise ValueError(str(md_path) + ": unterminated frontmatter")
-    parsed = yaml.safe_load(text[4:end])
-    return parsed if isinstance(parsed, dict) else {}
-
-
 def validate_lesson(md_path: Path) -> list[str]:
     """Return a list of error messages (empty if valid)."""
-    fm = _extract_frontmatter(md_path)
+    try:
+        fm = parse_frontmatter(md_path)
+    except ValueError as exc:
+        return [str(exc)]
+
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
     validator = Draft7Validator(schema)
     errors: list[str] = []
@@ -35,7 +27,13 @@ def validate_lesson(md_path: Path) -> list[str]:
         path = ".".join(str(p) for p in err.absolute_path) or "<root>"
         errors.append(path + ": " + err.message)
 
-    for i, check in enumerate(fm.get("checks", []) or []):
+    # Only walk the checks when the schema accepted them as a list; a non-list
+    # value has already produced its own error above.
+    checks = fm.get("checks")
+    if not isinstance(checks, list):
+        return errors
+
+    for i, check in enumerate(checks):
         if not isinstance(check, dict):
             errors.append("checks[" + str(i) + "]: not an object")
             continue
