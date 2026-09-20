@@ -4,14 +4,15 @@
 //   window.CheckRunner.parseFrontmatter(md) -> {meta, body}
 //
 // Output checks run via window.runCode (Pyodide worker).
-// AST checks run inside the same Pyodide worker, which loads
-// run_ast_check from the bundled ast_rules.py.js source.
+// AST checks go through window.runAstChecks, which posts to the same
+// long-lived worker rather than starting a second interpreter; the worker
+// loads run_ast_check from the bundled ast_rules.py.js source.
 
 (function () {
   let astRulesSourcePromise = null
   function loadAstRulesSource() {
     if (!astRulesSourcePromise) {
-      astRulesSourcePromise = fetch('/assets/runtime/ast_rules.py.js', { cache: 'force-cache' })
+      astRulesSourcePromise = fetch('assets/runtime/ast_rules.py.js', { cache: 'force-cache' })
         .then((r) => {
           if (!r.ok) throw new Error('Failed to load ast_rules.py.js: ' + r.status)
           return r.text()
@@ -20,34 +21,15 @@
     return astRulesSourcePromise
   }
 
-  async function runAstChecksInPyodide(code, checks) {
-    const worker = new Worker('/assets/runtime/pyodide-worker.js')
+  // Delegates to the shared worker: the AST rules are evaluated in the Pyodide
+  // instance the page already has, not in a second one.
+  async function runAstChecks(code, check) {
     try {
-      const astSrc = await loadAstRulesSource()
-      const TIMEOUT_MS = 5000
-      return await new Promise((resolve) => {
-        const timer = setTimeout(() => {
-          worker.terminate()
-          resolve({ passed: false, error: 'TimeoutError: AST check exceeded 5 seconds' })
-        }, TIMEOUT_MS)
-        worker.onmessage = (e) => {
-          clearTimeout(timer)
-          if (e.data.type === 'ast_result') resolve(e.data)
-          else resolve({ passed: false, error: 'Unexpected worker message: ' + JSON.stringify(e.data) })
-        }
-        worker.onerror = (e) => {
-          clearTimeout(timer)
-          resolve({ passed: false, error: 'Worker error: ' + e.message })
-        }
-        worker.postMessage({
-          type: 'run_ast_checks',
-          code,
-          checks,
-          astRulesSource: astSrc,
-        })
-      })
+      const astRulesSource = await loadAstRulesSource()
+      // `checks` carries the single check object straight through to
+      // run_ast_check() in the worker.
+      return await window.runAstChecks({ code, checks: check, astRulesSource })
     } catch (err) {
-      worker.terminate()
       return { passed: false, error: String(err) }
     }
   }
@@ -63,7 +45,7 @@
                       '\nGot: ' + JSON.stringify(r.stdout))
         }
       } else if (check.kind === 'ast') {
-        const r = await runAstChecksInPyodide(code, check)
+        const r = await runAstChecks(code, check)
         if (!r.passed) errors.push(r.error || 'AST check failed')
       } else {
         errors.push('Unknown check kind: ' + check.kind)
