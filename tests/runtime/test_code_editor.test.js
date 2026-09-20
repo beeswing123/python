@@ -5,10 +5,12 @@ import path from 'node:path'
 
 // Guards the two failure modes that defined Task 7:
 //   1. site/assets/runtime/code-editor.js was overwritten IN PLACE by its own
-//      esbuild bundle (a 20,064-line artifact that re-bundled itself on every
+//      esbuild bundle (a ~20,000-line artifact that re-bundled itself on every
 //      run). The source must stay hand-written ESM.
-//   2. scripts/build_editor.mjs must never be able to write to its own entry
-//      point — the bug that caused (1).
+//   2. scripts/build_editor.mjs must never write to its own entry point. The
+//      old script did so with an explicit in-place `writeFileSync` — no
+//      esbuild default was responsible — so the guards below pin the script's
+//      write target and the ENTRY/OUT distinction.
 
 // jsdom's `URL` cannot resolve a relative path against a `file:` base, so
 // build the paths from this file's own directory.
@@ -26,14 +28,17 @@ function urlLiteral(name) {
 }
 
 describe('code-editor.js is hand-written ESM source, not a bundle', () => {
-  it('is small enough to be source', () => {
-    // The clobbered artifact was 20,034 lines; the real source is ~25.
-    expect(source.split('\n').length).toBeLessThan(100)
-    expect(Buffer.byteLength(source)).toBeLessThan(10_000)
+  it('has not been replaced by a generated artifact', () => {
+    // Deliberately loose: the real source is ~25 lines and the clobbered
+    // artifact was 20,034, so this only trips on a wholesale replacement.
+    // The dependency-banner check below is the precise "is this a bundle?"
+    // test — do not tighten this cap, the editor is expected to grow.
+    expect(source.split('\n').length).toBeLessThan(5_000)
   })
 
   it('carries no esbuild dependency banners', () => {
-    // esbuild prefixes every bundled module with `// node_modules/<pkg>/...`.
+    // esbuild prefixes every bundled module with `// node_modules/<pkg>/...`;
+    // the committed bundle has 13 of them.
     expect(source).not.toContain('// node_modules/')
   })
 
@@ -48,10 +53,14 @@ describe('code-editor.js is hand-written ESM source, not a bundle', () => {
 })
 
 describe('scripts/build_editor.mjs cannot clobber its own entry point', () => {
-  it("disables esbuild's own write, which would emit next to the entry", () => {
-    // esbuild's default output path for a single entry point IS the entry
-    // point. Dropping `write: false` restores the clobbering build even though
-    // the explicit writeFileSync below still targets OUT.
+  it('reads the output in memory instead of letting esbuild emit it', () => {
+    // `write: false` makes esbuild return the bundle in `result.outputFiles`
+    // and emit nothing; the script's only write is therefore its own explicit
+    // `writeFileSync(OUT, ...)` below. Dropping it does not clobber the entry
+    // (esbuild writes to stdout and leaves `outputFiles` undefined, so the
+    // build fails loudly at that writeFileSync) — checked against esbuild
+    // 0.28.2. What actually keeps the entry safe is the pair of assertions
+    // that follow: OUT is the only write target, and OUT is not ENTRY.
     expect(buildScript).toMatch(/write:\s*false/)
   })
 

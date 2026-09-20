@@ -38,5 +38,7 @@ jobs:
         run: git diff --exit-code -- site/assets/runtime/code-editor.bundle.js
       - name: Build manifest
         run: uv run build-manifest
+      - name: Check committed manifest is fresh
+        run: git diff --exit-code -- content/manifest.json
       - name: Validate all lessons
         run: uv run pytest tests/test_lesson_schema.py -v
