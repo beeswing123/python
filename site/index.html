@@ -17,6 +17,9 @@
   <script src="assets/runtime/check-runner.js" defer></script>
   <script src="assets/runtime/run-code.js" defer></script>
   <script src="assets/runtime/ui-controls.js" defer></script>
+  <!-- Before the module script below: the module seeds and saves the learner's
+       code and needs window.Progress to exist already. -->
+  <script src="assets/runtime/progress.js" defer></script>
 </head>
 <body>
   <header style="padding:1rem; border-bottom:1px solid #e5e7eb;">
@@ -36,6 +39,15 @@
     const id = params.get('id') || 'ch01-l01-hello'
     const loading = document.getElementById('loading')
 
+    // Debounced so typing is not one localStorage write per keystroke.
+    let saveTimer = null
+    const scheduleSave = (code) => {
+      clearTimeout(saveTimer)
+      saveTimer = setTimeout(() => {
+        if (window.Progress) window.Progress.setCode(id, code)
+      }, 500)
+    }
+
     try {
       // Metadata comes from the manifest, already parsed by build-manifest.
       const lesson = await window.LiaScriptLoader.getLesson(id)
@@ -47,7 +59,15 @@
       // collapses its run of whitespace into one paragraph.
       document.getElementById('lia-container').textContent = body
 
-      const view = createEditor(document.getElementById('editor-host'), lesson.starter_code || '')
+      // Resume the learner's own code rather than reseeding from starter_code:
+      // a refresh must not discard their work.
+      if (window.Progress) window.Progress.setCurrent(id)
+      const savedCode = window.Progress ? window.Progress.getCode(id) : ''
+      const view = createEditor(
+        document.getElementById('editor-host'),
+        savedCode || lesson.starter_code || '',
+        scheduleSave,
+      )
 
       const title = lesson.title && (lesson.title.en || lesson.title.zh)
       if (title) {
@@ -76,7 +96,6 @@
     <button type="button" id="btn-import">Import Progress</button>
     <p id="import-status" role="status" style="margin:0.5rem 0 0; color:#6b7280;"></p>
   </div>
-  <script src="assets/runtime/progress.js" defer></script>
   <script>
     const importStatus = document.getElementById('import-status')
     document.getElementById('btn-export').onclick = () => window.Progress && window.Progress.exportJSON()

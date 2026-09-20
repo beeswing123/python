@@ -20011,22 +20011,27 @@ function python() {
 }
 
 // site/assets/runtime/code-editor.js
-function createEditor(parent, initial) {
-  const state = EditorState.create({
-    doc: initial || "",
-    extensions: [
-      lineNumbers(),
-      highlightActiveLine(),
-      history(),
-      keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
-      python(),
-      EditorView.theme({
-        "&": { fontSize: "16px" },
-        ".cm-scroller": { fontFamily: "ui-monospace, monospace" }
-      }),
-      EditorView.lineWrapping
-    ]
-  });
+function createEditor(parent, initial, onChange) {
+  const extensions = [
+    lineNumbers(),
+    highlightActiveLine(),
+    history(),
+    keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
+    python(),
+    EditorView.theme({
+      "&": { fontSize: "16px" },
+      ".cm-scroller": { fontFamily: "ui-monospace, monospace" }
+    }),
+    EditorView.lineWrapping
+  ];
+  if (onChange) {
+    extensions.push(
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) onChange(update.state.doc.toString());
+      })
+    );
+  }
+  const state = EditorState.create({ doc: initial || "", extensions });
   return new EditorView({ state, parent });
 }
 export {
