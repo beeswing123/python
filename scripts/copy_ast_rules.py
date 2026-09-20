@@ -3,6 +3,7 @@
 This is run by hand (or by the content CI job) whenever ast_rules.py changes.
 Future phases can replace this with a proper bundler.
 """
+
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parent.parent / "src" / "py_tutorial_build" / "ast_rules.py"

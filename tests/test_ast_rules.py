@@ -12,24 +12,24 @@ class TestRunAstCheck:
         assert "len" in (err or "")
 
     def test_must_not_contain_fails_when_present(self) -> None:
-        passed, err = run_ast_check('import os', {"kind": "ast", "must_not_contain": "Import"})
+        passed, err = run_ast_check("import os", {"kind": "ast", "must_not_contain": "Import"})
         assert passed is False
         assert "Import" in (err or "")
 
     def test_must_define_function(self) -> None:
-        code = 'def greet(): pass'
+        code = "def greet(): pass"
         assert run_ast_check(code, {"kind": "ast", "must_define_function": "greet"})[0] is True
 
     def test_syntax_error_returns_syntax_error(self) -> None:
-        passed, err = run_ast_check('def broken(:', {"kind": "ast", "must_contain_call": "print"})
+        passed, err = run_ast_check("def broken(:", {"kind": "ast", "must_contain_call": "print"})
         assert passed is False
         assert "SyntaxError" in (err or "")
 
     def test_min_lines(self) -> None:
-        assert run_ast_check('x = 1', {"kind": "ast", "min_lines": 3})[0] is False
+        assert run_ast_check("x = 1", {"kind": "ast", "min_lines": 3})[0] is False
 
     def test_max_lines(self) -> None:
-        assert run_ast_check('x = 1\ny = 2', {"kind": "ast", "max_lines": 1})[0] is False
+        assert run_ast_check("x = 1\ny = 2", {"kind": "ast", "max_lines": 1})[0] is False
 
 
 class TestValidateAstCheck:

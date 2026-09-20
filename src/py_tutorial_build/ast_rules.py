@@ -6,21 +6,42 @@ The same algorithm runs in two places:
 
 Keep the logic identical so authoring-time validation matches runtime checks.
 """
+
 from __future__ import annotations
 
 import ast
 from typing import Any
 
 VALID_AST_NODES: set[str] = {
-    "Import", "ImportFrom", "FunctionDef", "AsyncFunctionDef", "ClassDef",
-    "If", "For", "While", "With", "Try", "Return", "Yield", "Assign",
-    "AugAssign", "Call", "Lambda", "ListComp", "DictComp", "SetComp",
+    "Import",
+    "ImportFrom",
+    "FunctionDef",
+    "AsyncFunctionDef",
+    "ClassDef",
+    "If",
+    "For",
+    "While",
+    "With",
+    "Try",
+    "Return",
+    "Yield",
+    "Assign",
+    "AugAssign",
+    "Call",
+    "Lambda",
+    "ListComp",
+    "DictComp",
+    "SetComp",
     "GeneratorExp",
 }
 
 VALID_AST_CHECK_KEYS: set[str] = {
-    "must_contain", "must_not_contain", "must_contain_call",
-    "must_define_function", "min_lines", "max_lines",
+    "must_contain",
+    "must_not_contain",
+    "must_contain_call",
+    "must_define_function",
+    "min_lines",
+    "max_lines",
 }
 
 
@@ -100,9 +121,7 @@ def _has_node(tree: ast.AST, name: str) -> bool:
 
 def _has_call(tree: ast.AST, name: str) -> bool:
     return any(
-        isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Name)
-        and node.func.id == name
+        isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == name
         for node in ast.walk(tree)
     )
 
