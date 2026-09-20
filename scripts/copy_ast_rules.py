@@ -1,6 +1,14 @@
 """Copy src/py_tutorial_build/ast_rules.py into site/assets/runtime/ast_rules.py.js.
 
-This is run by hand (or by the content CI job) whenever ast_rules.py changes.
+The two files must stay byte-identical: pytest validates lesson content against
+the Python module, while Pyodide runs the .js copy at check time. The CI test
+job reruns this script and fails on `git diff`, so an edit to ast_rules.py that
+is not copied here breaks the build rather than silently desynchronising
+authoring-time validation from runtime checking.
+
+Run it by hand after editing ast_rules.py:
+    uv run python scripts/copy_ast_rules.py
+
 Future phases can replace this with a proper bundler.
 """
 

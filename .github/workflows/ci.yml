@@ -36,9 +36,62 @@ jobs:
         run: npm run build:editor
       - name: Check committed editor bundle is fresh
         run: git diff --exit-code -- site/assets/runtime/code-editor.bundle.js
+      # ast_rules.py is the one algorithm that runs in two places: pytest
+      # validates lessons against src/py_tutorial_build/ast_rules.py, and
+      # Pyodide runs site/assets/runtime/ast_rules.py.js at check time. They
+      # must stay byte-identical, or authoring-time validation silently stops
+      # describing what the learner is actually graded on.
+      - name: Copy ast_rules.py into the runtime artifact
+        run: uv run python scripts/copy_ast_rules.py
+      - name: Check committed ast_rules.py.js is byte-identical to ast_rules.py
+        run: git diff --exit-code -- site/assets/runtime/ast_rules.py.js
       - name: Build manifest
         run: uv run build-manifest
       - name: Check committed manifest is fresh
         run: git diff --exit-code -- content/manifest.json
       - name: Validate all lessons
         run: uv run pytest tests/test_lesson_schema.py -v
+
+  # Publishing lives in this workflow, not a separate one, so a push that fails
+  # any check above cannot also publish: deploy needs the test job and only runs
+  # for main.
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install npm deps
+        run: npm ci
+      - name: Build editor bundle
+        run: npm run build:editor
+      - name: Check committed editor bundle is fresh
+        run: git diff --exit-code -- site/assets/runtime/code-editor.bundle.js
+      - name: Build manifest
+        run: uv run build-manifest
+      - name: Copy content into site
+        run: cp -r content site/content
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
