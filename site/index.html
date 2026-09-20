@@ -50,14 +50,26 @@
     <button type="button" id="btn-export">Export Progress</button>
     <input type="file" id="file-import" accept="application/json" hidden>
     <button type="button" id="btn-import">Import Progress</button>
+    <p id="import-status" role="status" style="margin:0.5rem 0 0; color:#6b7280;"></p>
   </div>
   <script src="/assets/runtime/progress.js" defer></script>
   <script>
+    const importStatus = document.getElementById('import-status')
     document.getElementById('btn-export').onclick = () => window.Progress && window.Progress.exportJSON()
     document.getElementById('btn-import').onclick = () => document.getElementById('file-import').click()
     document.getElementById('file-import').onchange = async (e) => {
-      const f = e.target.files[0]
-      if (f) await window.Progress.importJSON(f)
+      const input = e.target
+      const f = input.files[0]
+      if (!f) return
+      try {
+        await window.Progress.importJSON(f)
+        importStatus.textContent = 'Progress imported.'
+      } catch (err) {
+        importStatus.textContent = 'Import failed: ' + err.message
+      } finally {
+        // Clear so picking the same file again still fires `change`.
+        input.value = ''
+      }
     }
   </script>
 </body>

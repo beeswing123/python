@@ -5,13 +5,27 @@
     return { version: 1, language: 'en', done: [], current: null, code: {}, updated: null }
   }
 
+  // Coerce a parsed object to the expected shape. Anything unrecognised in
+  // localStorage or in an imported file is repaired here rather than trusted,
+  // because a wrong-shaped object would otherwise persist and break every
+  // later read (markDone would throw on an undefined `done`).
+  function normalize(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return empty()
+    if (obj.version !== 1) return empty()
+    const s = empty()
+    s.done = Array.isArray(obj.done) ? obj.done : []
+    s.code = obj.code && typeof obj.code === 'object' && !Array.isArray(obj.code) ? obj.code : {}
+    s.language = typeof obj.language === 'string' ? obj.language : 'en'
+    s.current = typeof obj.current === 'string' ? obj.current : null
+    s.updated = typeof obj.updated === 'string' ? obj.updated : null
+    return s
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem(KEY)
       if (!raw) return empty()
-      const obj = JSON.parse(raw)
-      if (obj.version !== 1) return empty()
-      return obj
+      return normalize(JSON.parse(raw))
     } catch {
       return empty()
     }
@@ -52,16 +66,25 @@
     const a = document.createElement('a')
     a.href = url
     a.download = 'py-tutorial-progress.json'
+    document.body.appendChild(a)
     a.click()
-    URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+    // iOS Safari shows a confirmation sheet and only fetches the blob after the
+    // user taps it, so revoking now would race the download. FileSaver.js defers
+    // by 40s for the same reason.
+    setTimeout(() => URL.revokeObjectURL(url), 40000)
   }
 
   async function importJSON(file) {
     const text = await file.text()
     const obj = JSON.parse(text)
-    if (obj.version !== 1) throw new Error('Unsupported progress version: ' + obj.version)
-    save(obj)
-    return obj
+    if (!obj || typeof obj !== 'object' || obj.version !== 1) {
+      throw new Error('Unsupported progress version: ' + (obj && obj.version))
+    }
+    // Normalise before saving so a wrong-shaped file cannot be persisted.
+    const s = normalize(obj)
+    save(s)
+    return s
   }
 
   window.Progress = { markDone, getDone, setCode, getCode, setCurrent, getCurrent, setLanguage, getLanguage, exportJSON, importJSON }
