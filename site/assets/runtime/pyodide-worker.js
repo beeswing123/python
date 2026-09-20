@@ -6,6 +6,9 @@
 //   recv   { type: 'run_code', code }
 //   posts  { type: 'result', stdout, stderr, error } | { type: 'error', error }
 //   recv   { type: 'run_ast_checks', code, checks, astRulesSource }
+//          `astRulesSource` must define run_ast_check_json(check_json, code):
+//          the payloads are passed as data via globals.set, never interpolated
+//          into source text.
 //   posts  { type: 'ast_result', passed, error }
 //
 // The worker is long-lived: its main-thread owner (run-code.js) creates it once,
@@ -49,15 +52,13 @@ self.onmessage = async (e) => {
     try {
       const py = await ensurePyodide()
       await py.runPythonAsync(msg.astRulesSource)
-      const checkJson = JSON.stringify(msg.checks)
-      const codeJson = JSON.stringify(msg.code)
-      const resultJson = py.runPython(
-        'import json\n' +
-        'check = json.loads(' + checkJson + ')\n' +
-        'code = json.loads(' + codeJson + ')\n' +
-        'passed, err = run_ast_check(code, check)\n' +
-        'json.dumps({"passed": passed, "error": err})\n'
-      )
+      // Both payloads travel as DATA through globals.set, never as source text.
+      // Building the call by interpolation used to produce
+      // `json.loads({"kind":"ast",...})`, i.e. a dict argument, so every ast
+      // check raised TypeError and was reported as a failed check.
+      py.globals.set('__ast_check_json', JSON.stringify(msg.checks))
+      py.globals.set('__ast_code', msg.code)
+      const resultJson = py.runPython('run_ast_check_json(__ast_check_json, __ast_code)\n')
       const parsed = JSON.parse(resultJson)
       self.postMessage({ type: 'ast_result', passed: parsed.passed, error: parsed.error })
     } catch (err) {

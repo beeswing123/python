@@ -10,6 +10,7 @@ Keep the logic identical so authoring-time validation matches runtime checks.
 from __future__ import annotations
 
 import ast
+import json
 from typing import Any
 
 VALID_AST_NODES: set[str] = {
@@ -113,6 +114,20 @@ def run_ast_check(code: str, check: dict[str, Any]) -> tuple[bool, str | None]:
         )
 
     return True, None
+
+
+def run_ast_check_json(check_json: str, code: str) -> str:
+    """JSON-in, JSON-out entry point for the Pyodide worker.
+
+    The worker passes both arguments as data (``pyodide.globals.set``) and runs
+    this by name, so no payload is ever pasted into Python source text. An
+    earlier version interpolated ``JSON.stringify(check)`` into a
+    ``json.loads(...)`` call, which handed Python an object literal and failed
+    every check with a TypeError.
+    """
+    check = json.loads(check_json)
+    passed, err = run_ast_check(code, check)
+    return json.dumps({"passed": passed, "error": err})
 
 
 def _has_node(tree: ast.AST, name: str) -> bool:

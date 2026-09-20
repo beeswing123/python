@@ -12,7 +12,13 @@
   let astRulesSourcePromise = null
   function loadAstRulesSource() {
     if (!astRulesSourcePromise) {
-      astRulesSourcePromise = fetch('assets/runtime/ast_rules.py.js', { cache: 'force-cache' })
+      // no-store, not force-cache: the artifact is un-fingerprinted, and the
+      // worker calls run_ast_check_json, which only exists in the current
+      // build. A cached older copy would make every AST check fail for
+      // returning visitors. At 4.9 KB it is cheaper to revalidate than to
+      // debug that, and `no-store` cannot be defeated by an intermediate
+      // cache's freshness policy the way `no-cache` can.
+      astRulesSourcePromise = fetch('assets/runtime/ast_rules.py.js', { cache: 'no-store' })
         .then((r) => {
           if (!r.ok) throw new Error('Failed to load ast_rules.py.js: ' + r.status)
           return r.text()
