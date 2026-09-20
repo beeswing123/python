@@ -40,5 +40,3 @@ Replace the line below with code that prints `Hello, World!`.
 ```python
 # your code here
 ```
-
-When you see ✓, click **Next** to continue.
