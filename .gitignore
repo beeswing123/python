@@ -15,6 +15,9 @@ htmlcov/
 # Node (added in Task 4)
 node_modules/
 
+# Deploy-time copy of content/ (created by .github/workflows/deploy.yml)
+site/content/
+
 # IDE
 .vscode/
 .idea/

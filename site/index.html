@@ -9,6 +9,8 @@
   <script src="https://cdn.jsdelivr.net/gh/liascript/liascript-template@master/dist/liascript.min.js" defer></script>
   <script src="/assets/runtime/lesson-loader.js" defer></script>
   <script src="/assets/runtime/check-runner.js" defer></script>
+  <script src="/assets/runtime/run-code.js" defer></script>
+  <script src="/assets/runtime/ui-controls.js" defer></script>
 </head>
 <body>
   <header style="padding:1rem; border-bottom:1px solid #e5e7eb;">
@@ -21,5 +23,28 @@
     <div id="editor-host" class="editor-wrap"></div>
     <section id="lesson-controls" class="lesson-controls"></section>
   </main>
+  <script type="module">
+    import { createEditor } from '/assets/runtime/code-editor.bundle.js'
+
+    const params = new URLSearchParams(location.search)
+    const id = params.get('id') || 'ch01-l01-hello'
+    const md = await window.LiaScriptLoader.fetchLesson(id)
+    const { meta, body } = window.CheckRunner.parseFrontmatter(md)
+    document.getElementById('loading').remove()
+    document.getElementById('lia-container').innerText = body
+
+    const view = createEditor(document.getElementById('editor-host'), meta.starter_code || '')
+
+    if (meta.title) {
+      const h = document.querySelector('header h1')
+      if (h) h.textContent = meta.title
+    }
+
+    window.UIControls.bind({
+      lesson: meta,
+      getCode: () => view.state.doc.toString(),
+      onPass: () => window.Progress && window.Progress.markDone(id),
+    })
+  </script>
 </body>
 </html>
