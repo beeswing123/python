@@ -3,19 +3,42 @@ id: ch01-l01-hello
 chapter: 1
 order: 1
 title:
-  en: "Stub"
-  zh: "占位"
+  en: "Your First Program"
+  zh: "你的第一个程序"
 description:
-  en: "Stub lesson — replaced in Task 9."
-  zh: "占位课程——Task 9 替换。"
-estimated_minutes: 1
-objectives: []
-starter_code: ""
-solution: ""
-hints: []
-checks: []
+  en: "Use print() to display text."
+  zh: "用 print() 显示文字。"
+estimated_minutes: 3
+objectives:
+  - en: "Write a print statement"
+    zh: "编写 print 语句"
+starter_code: |
+  # Write a print statement below
+solution: |
+  print("Hello, World!")
+hints:
+  - en: "Use the print() function."
+    zh: "用 print() 函数。"
+  - en: "Strings go in quotes."
+    zh: "字符串要放在引号里。"
+checks:
+  - kind: output
+    expected: "Hello, World!\n"
+  - kind: ast
+    must_contain_call: print
+    must_not_contain: [Import, While]
 ---
 
-# Stub
+# Your First Program
 
-Replaced in Task 9.
+Welcome! In Python, you use `print()` to display text.
+
+## Try it
+
+Replace the line below with code that prints `Hello, World!`.
+
+```python
+# your code here
+```
+
+When you see ✓, click **Next** to continue.

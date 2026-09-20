@@ -2,6 +2,49 @@
   "lessons": [
     {
       "id": "ch01-l01-hello",
+      "chapter": 1,
+      "order": 1,
+      "title": {
+        "en": "Your First Program",
+        "zh": "\u4f60\u7684\u7b2c\u4e00\u4e2a\u7a0b\u5e8f"
+      },
+      "description": {
+        "en": "Use print() to display text.",
+        "zh": "\u7528 print() \u663e\u793a\u6587\u5b57\u3002"
+      },
+      "estimated_minutes": 3,
+      "objectives": [
+        {
+          "en": "Write a print statement",
+          "zh": "\u7f16\u5199 print \u8bed\u53e5"
+        }
+      ],
+      "starter_code": "# Write a print statement below\n",
+      "solution": "print(\"Hello, World!\")\n",
+      "hints": [
+        {
+          "en": "Use the print() function.",
+          "zh": "\u7528 print() \u51fd\u6570\u3002"
+        },
+        {
+          "en": "Strings go in quotes.",
+          "zh": "\u5b57\u7b26\u4e32\u8981\u653e\u5728\u5f15\u53f7\u91cc\u3002"
+        }
+      ],
+      "checks": [
+        {
+          "kind": "output",
+          "expected": "Hello, World!\n"
+        },
+        {
+          "kind": "ast",
+          "must_contain_call": "print",
+          "must_not_contain": [
+            "Import",
+            "While"
+          ]
+        }
+      ],
       "chapter_dir": "ch01-getting-started",
       "file": "01-hello.md"
     }

@@ -28,20 +28,24 @@
 
     const params = new URLSearchParams(location.search)
     const id = params.get('id') || 'ch01-l01-hello'
+    // Metadata comes from the manifest, already parsed by build-manifest.
+    const lesson = await window.LiaScriptLoader.getLesson(id)
+    // parseFrontmatter is only used to split the Markdown body from its frontmatter.
     const md = await window.LiaScriptLoader.fetchLesson(id)
-    const { meta, body } = window.CheckRunner.parseFrontmatter(md)
+    const { body } = window.CheckRunner.parseFrontmatter(md)
     document.getElementById('loading').remove()
     document.getElementById('lia-container').innerText = body
 
-    const view = createEditor(document.getElementById('editor-host'), meta.starter_code || '')
+    const view = createEditor(document.getElementById('editor-host'), lesson.starter_code || '')
 
-    if (meta.title) {
+    const title = lesson.title && (lesson.title.en || lesson.title.zh)
+    if (title) {
       const h = document.querySelector('header h1')
-      if (h) h.textContent = meta.title
+      if (h) h.textContent = title
     }
 
     window.UIControls.bind({
-      lesson: meta,
+      lesson: lesson,
       getCode: () => view.state.doc.toString(),
       onPass: () => window.Progress && window.Progress.markDone(id),
     })

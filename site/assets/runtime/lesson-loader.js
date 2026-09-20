@@ -1,14 +1,23 @@
-// Fetch lesson Markdown by id (frontmatter + body).
-// Exposes window.LiaScriptLoader.fetchLesson.
+// Load lessons by id.
+// Exposes window.LiaScriptLoader:
+//   getLesson(id)   -> manifest entry, metadata already parsed by the build
+//   fetchLesson(id) -> lesson Markdown text (frontmatter + body)
 (function () {
   const BASE = '/content'
 
-  async function fetchLesson(id) {
+  // The manifest entry carries the lesson's parsed frontmatter (title,
+  // starter_code, hints, checks, ...); the browser never parses YAML itself.
+  async function getLesson(id) {
     const meta = await fetchMeta()
     const entry = meta.lessons.find((l) => l.id === id)
     if (!entry) {
       throw new Error('Lesson not found: ' + id)
     }
+    return entry
+  }
+
+  async function fetchLesson(id) {
+    const entry = await getLesson(id)
     const url = BASE + '/' + entry.chapter_dir + '/' + entry.file
     const res = await fetch(url, { cache: 'no-store' })
     if (!res.ok) {
@@ -28,5 +37,5 @@
     return metaPromise
   }
 
-  window.LiaScriptLoader = { fetchLesson }
+  window.LiaScriptLoader = { getLesson, fetchLesson }
 })()
