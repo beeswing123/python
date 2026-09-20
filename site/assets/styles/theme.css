@@ -1,0 +1,42 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --accent: #2563eb;
+  --muted: #6b7280;
+  --ok: #16a34a;
+  --err: #dc2626;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  line-height: 1.5;
+}
+.lesson-output {
+  background: #0b1020;
+  color: #e5e7eb;
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow: auto;
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
+}
+.lesson-answer {
+  background: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
+}
+button {
+  font-size: 16px;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+button:hover { background: #f9fafb; }

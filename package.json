@@ -1,0 +1,21 @@
+{
+  "name": "python",
+  "version": "1.0.0",
+  "description": "A browser-based interactive Python tutorial — Markdown lessons, in-browser Python via Pyodide, deployed to GitHub Pages, mobile-friendly.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jsdom": "^30.1.0",
+    "vitest": "^5.0.1"
+  }
+}

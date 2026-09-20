@@ -1,0 +1,9 @@
+{
+  "lessons": [
+    {
+      "id": "ch01-l01-hello",
+      "chapter_dir": "ch01-getting-started",
+      "file": "01-hello.md"
+    }
+  ]
+}

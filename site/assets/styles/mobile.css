@@ -1,0 +1,27 @@
+/* Sticky controls so Run/Check stay above the iOS soft keyboard */
+.lesson-controls {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+/* Smallest phone */
+@media (min-width: 360px) {
+  main { padding: 0.5rem; }
+  .editor-wrap { padding: 0.5rem; }
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  main { padding: 1rem; }
+  .editor-wrap { padding: 1rem; }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  main { max-width: 960px; margin: 0 auto; }
+  .editor-wrap { max-width: 960px; margin: 0 auto; }
+}
