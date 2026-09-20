@@ -83,9 +83,13 @@ def run_ast_check(code: str, check: dict[str, Any]) -> tuple[bool, str | None]:
         return False, "Expected function definition '" + fn + "' not found"
 
     if "min_lines" in check and len(lines) < check["min_lines"]:
-        return False, "Code too short: " + str(len(lines)) + " < " + str(check["min_lines"]) + " lines"
+        return False, (
+            "Code too short: " + str(len(lines)) + " < " + str(check["min_lines"]) + " lines"
+        )
     if "max_lines" in check and len(lines) > check["max_lines"]:
-        return False, "Code too long: " + str(len(lines)) + " > " + str(check["max_lines"]) + " lines"
+        return False, (
+            "Code too long: " + str(len(lines)) + " > " + str(check["max_lines"]) + " lines"
+        )
 
     return True, None
 
