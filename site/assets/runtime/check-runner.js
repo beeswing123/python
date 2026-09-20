@@ -72,9 +72,13 @@
     return { passed: errors.length === 0, errors, hints }
   }
 
-  // Tiny frontmatter parser: reads scalar `key: value` lines at the top of a file.
-  // The lesson page only needs simple scalars; nested objects (title, hints)
-  // are JSON-encoded into a `lesson.json` companion at build time in M3.
+  // Splits a lesson Markdown file into its frontmatter (`meta`) and `body`.
+  //
+  // `meta` is scalar-only and is NOT the source of lesson metadata: the
+  // authoritative, fully-parsed frontmatter arrives pre-parsed in
+  // `content/manifest.json` (written by `build-manifest`, read via
+  // `LiaScriptLoader.getLesson`). This function now exists only to split the
+  // Markdown body from its frontmatter; the page ignores `meta`.
   function parseFrontmatter(md) {
     const m = md.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/)
     if (!m) return { meta: {}, body: md }

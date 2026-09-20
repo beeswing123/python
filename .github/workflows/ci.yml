@@ -12,15 +12,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      - name: Sync deps
+      - name: Sync Python deps
         run: uv sync --all-extras
+      - name: Install npm deps
+        run: npm ci
       - name: Ruff lint
         run: uv run ruff check .
       - name: Ruff format check
         run: uv run ruff format --check .
       - name: Mypy
         run: uv run mypy src tests
-      - name: Pytest
+      - name: Pytest (Python)
         run: uv run pytest --cov=src --cov-fail-under=80
+      - name: Vitest (JS runtime)
+        run: npx vitest run
+      - name: Build editor bundle
+        run: npm run build:editor
+      - name: Check committed editor bundle is fresh
+        run: git diff --exit-code -- site/assets/runtime/code-editor.bundle.js
+      - name: Build manifest
+        run: uv run build-manifest
+      - name: Validate all lessons
+        run: uv run pytest tests/test_lesson_schema.py -v
