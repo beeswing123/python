@@ -13,6 +13,11 @@ body {
   margin: 0;
   line-height: 1.5;
 }
+/* The lesson body is plain Markdown text (see index.html): without this it
+   collapses into a single paragraph with literal code fences. */
+#lia-container {
+  white-space: pre-wrap;
+}
 .lesson-output {
   background: #0b1020;
   color: #e5e7eb;

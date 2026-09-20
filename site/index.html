@@ -6,7 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="assets/styles/theme.css">
   <link rel="stylesheet" href="assets/styles/mobile.css">
-  <script src="https://cdn.jsdelivr.net/gh/liascript/liascript-template@master/dist/liascript.min.js" defer></script>
+  <!-- LiaScript is loaded for M2's renderer work. It does NOT drive lesson
+       display yet: the lesson body below is assigned as plain text, so Phase 1
+       ships readable Markdown, not LiaScript rendering. The previous URL
+       (liascript-template@master/dist/liascript.min.js) pointed at a
+       non-existent repository and 404'd; this is LiaScript's own published
+       entry point, which publishes no version-pinned build to pin to. -->
+  <script src="https://liascript.github.io/course/preview-lia.js" defer></script>
   <script src="assets/runtime/lesson-loader.js" defer></script>
   <script src="assets/runtime/check-runner.js" defer></script>
   <script src="assets/runtime/run-code.js" defer></script>
@@ -34,7 +40,9 @@
     const md = await window.LiaScriptLoader.fetchLesson(id)
     const { body } = window.CheckRunner.parseFrontmatter(md)
     document.getElementById('loading').remove()
-    document.getElementById('lia-container').innerText = body
+    // textContent, not innerText: the lesson is Markdown source, and innerText
+    // collapses its run of whitespace into one paragraph.
+    document.getElementById('lia-container').textContent = body
 
     const view = createEditor(document.getElementById('editor-host'), lesson.starter_code || '')
 
