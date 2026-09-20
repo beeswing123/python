@@ -3,7 +3,9 @@
 //   getLesson(id)   -> manifest entry, metadata already parsed by the build
 //   fetchLesson(id) -> lesson Markdown text (frontmatter + body)
 (function () {
-  const BASE = '/content'
+  // Document-relative: GitHub Pages serves this as a project site under
+  // /python/, so a leading slash would resolve to the domain root and 404.
+  const BASE = 'content'
 
   // The manifest entry carries the lesson's parsed frontmatter (title,
   // starter_code, hints, checks, ...); the browser never parses YAML itself.
@@ -29,7 +31,7 @@
   let metaPromise = null
   function fetchMeta() {
     if (!metaPromise) {
-      metaPromise = fetch('/content/manifest.json', { cache: 'no-store' }).then((r) => {
+      metaPromise = fetch('content/manifest.json', { cache: 'no-store' }).then((r) => {
         if (!r.ok) throw new Error('manifest fetch failed: ' + r.status)
         return r.json()
       })

@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <title>Python Interactive Tutorial</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/assets/styles/theme.css">
-  <link rel="stylesheet" href="/assets/styles/mobile.css">
+  <link rel="stylesheet" href="assets/styles/theme.css">
+  <link rel="stylesheet" href="assets/styles/mobile.css">
   <script src="https://cdn.jsdelivr.net/gh/liascript/liascript-template@master/dist/liascript.min.js" defer></script>
-  <script src="/assets/runtime/lesson-loader.js" defer></script>
-  <script src="/assets/runtime/check-runner.js" defer></script>
-  <script src="/assets/runtime/run-code.js" defer></script>
-  <script src="/assets/runtime/ui-controls.js" defer></script>
+  <script src="assets/runtime/lesson-loader.js" defer></script>
+  <script src="assets/runtime/check-runner.js" defer></script>
+  <script src="assets/runtime/run-code.js" defer></script>
+  <script src="assets/runtime/ui-controls.js" defer></script>
 </head>
 <body>
   <header style="padding:1rem; border-bottom:1px solid #e5e7eb;">
@@ -24,7 +24,7 @@
     <section id="lesson-controls" class="lesson-controls"></section>
   </main>
   <script type="module">
-    import { createEditor } from '/assets/runtime/code-editor.bundle.js'
+    import { createEditor } from 'assets/runtime/code-editor.bundle.js'
 
     const params = new URLSearchParams(location.search)
     const id = params.get('id') || 'ch01-l01-hello'
@@ -56,7 +56,7 @@
     <button type="button" id="btn-import">Import Progress</button>
     <p id="import-status" role="status" style="margin:0.5rem 0 0; color:#6b7280;"></p>
   </div>
-  <script src="/assets/runtime/progress.js" defer></script>
+  <script src="assets/runtime/progress.js" defer></script>
   <script>
     const importStatus = document.getElementById('import-status')
     document.getElementById('btn-export').onclick = () => window.Progress && window.Progress.exportJSON()

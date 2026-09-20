@@ -20,7 +20,7 @@ describe('LiaScriptLoader.fetchLesson', () => {
   it('returns markdown when lesson id is found', async () => {
     await import('../../site/assets/runtime/lesson-loader.js')
     globalThis.fetch = vi.fn().mockImplementation((url) => {
-      if (url.endsWith('/content/manifest.json')) {
+      if (url === 'content/manifest.json') {
         return Promise.resolve({
           ok: true,
           json: async () => ({
@@ -30,7 +30,7 @@ describe('LiaScriptLoader.fetchLesson', () => {
           }),
         })
       }
-      if (url.endsWith('/content/ch01-getting-started/01-hello.md')) {
+      if (url === 'content/ch01-getting-started/01-hello.md') {
         return Promise.resolve({ ok: true, text: async () => '# Hello' })
       }
       return Promise.reject(new Error('unexpected url: ' + url))
