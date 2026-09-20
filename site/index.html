@@ -46,5 +46,19 @@
       onPass: () => window.Progress && window.Progress.markDone(id),
     })
   </script>
+  <div class="progress-controls" style="padding:0.5rem;">
+    <button type="button" id="btn-export">Export Progress</button>
+    <input type="file" id="file-import" accept="application/json" hidden>
+    <button type="button" id="btn-import">Import Progress</button>
+  </div>
+  <script src="/assets/runtime/progress.js" defer></script>
+  <script>
+    document.getElementById('btn-export').onclick = () => window.Progress && window.Progress.exportJSON()
+    document.getElementById('btn-import').onclick = () => document.getElementById('file-import').click()
+    document.getElementById('file-import').onchange = async (e) => {
+      const f = e.target.files[0]
+      if (f) await window.Progress.importJSON(f)
+    }
+  </script>
 </body>
 </html>
